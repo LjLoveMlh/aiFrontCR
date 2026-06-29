@@ -66,6 +66,13 @@ services:
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
       - SESSION_SECRET=${SESSION_SECRET:-change-me-use-openssl-rand-hex-32}
 
+      # ===== 飞书私域 CR 文档解析 agent =====
+      # 容器内无 macOS Keychain,需显式提供 app_id + app_secret
+      # 在宿主机 .env 填入：FEISHU_APP_ID=cli_xxx, FEISHU_APP_SECRET=xxx
+      - FEISHU_APP_ID=${FEISHU_APP_ID:-}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET:-}
+      - FEISHU_BRAND=${FEISHU_BRAND:-feishu}
+
       # ===== 阶段4 API Key 鉴权 =====
       - API_KEYS=${API_KEYS:-}
       - API_KEY_REQUIRED=${API_KEY_REQUIRED:-false}

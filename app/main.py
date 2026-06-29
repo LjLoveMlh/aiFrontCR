@@ -16,8 +16,10 @@ from app.api.auth import router as auth_api_router
 from app.api.deps import RequestContextMiddleware
 from app.api.documents_api import router as documents_api_router
 from app.api.feedback_api import router as feedback_api_router
+from app.api.feishu_import_api import router as feishu_import_router
 from app.api.health import router as health_router
 from app.api.knowledge_add_api import router as knowledge_add_router
+from app.api.llm_manual_api import router as llm_manual_router
 from app.api.review_api import router as review_router
 from app.api.search_api import router as search_api_router
 from app.api.stream_api import router as stream_router
@@ -38,6 +40,7 @@ async def lifespan(app: FastAPI):
     logger.info(f"Redis 索引：{settings.redis_index_name}")
     logger.info(f"Embedding：{settings.embedding_model_id}")
     logger.info(f"Web 后台：/knowledge/admin（密码鉴权）")
+    logger.info(f"LLM 使用手册：/llm-manual.md（给其他大模型看）")
     logger.info(f"日志目录：{settings.log_dir_abs}")
     yield
     logger.info(f"=== {settings.app_name} 关闭 ===")
@@ -101,6 +104,10 @@ def create_app() -> FastAPI:
     app.include_router(stream_router, tags=["review-stream"])
     # 阶段4：知识库增量入库（CloudCode 友好）
     app.include_router(knowledge_add_router, tags=["knowledge-ingest"])
+    # 飞书 CR 文档解析入库（lark-cli + LLM agent）
+    app.include_router(feishu_import_router, tags=["knowledge-feishu"])
+    # 给其他大模型看的使用手册（公开，不需鉴权）
+    app.include_router(llm_manual_router)
 
     # 阶段3/4/5 预留：
     # app.include_router(git_router, prefix="/git", tags=["git"])

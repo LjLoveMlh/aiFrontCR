@@ -9,12 +9,22 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from loguru import logger
 
+from app.agents.feishu_parser import FeishuParserAgent
 from app.conf.settings import settings
-from app.entities.document import AssetType
+from app.entities.document import AssetType, SourceType
 from app.entities.feedback import FeedbackRequest
 from app.entities.search import SearchRequest
 from app.repositories.knowledge_repo import knowledge_repo
+from app.services.lark_fetcher import (
+    LarkAuthError,
+    LarkDocNotFoundError,
+    LarkFetcherError,
+    LarkInvalidResponseError,
+    LarkNotInstalledError,
+    fetch_lark_doc,
+)
 from app.services.url_fetcher import fetch_url
 from app.web.auth_pages import is_admin
 from app.web.deps import require_admin
@@ -165,22 +175,90 @@ async def import_url_submit(
     title: str = Form(""),
     asset_type: str = Form("spec"),
     tags: str = Form(""),
+    is_feishu_agent: Optional[str] = Form(None),
+    dry_run: Optional[str] = Form(None),
 ):
+    """链接导入入口.
+
+    两种链路:
+    - is_feishu_agent=checked: 私域飞书 → lark-cli + LLM 重写
+    - 否则: 公开链接 → url_fetcher HTTP GET
+    """
+    is_feishu = is_feishu_agent == "true"
+    is_dry_run = dry_run == "true"
+    tag_list = [t.strip() for t in tags.split(",") if t.strip()]
+    msg = ""
+
     try:
         knowledge_repo.init()
-        fetched = await fetch_url(url)
-        doc = knowledge_repo.add_url(
-            title=title or fetched.title,
-            url=url,
-            text=fetched.content,
-            content_type=fetched.content_type,
-            source_label=fetched.source,
-            asset_type=AssetType(asset_type),
-            tags=[t.strip() for t in tags.split(",") if t.strip()],
-        )
-        msg = f"导入成功：{doc.title}，{doc.chunk_count} chunks（来源：{fetched.source}）"
+
+        if is_feishu:
+            # 私域飞书链路：lark-cli → 清洗 → LLM 重写 → 入库
+            try:
+                lark_doc = await fetch_lark_doc(url)
+            except LarkNotInstalledError as e:
+                msg = f"❌ lark-cli 未安装：{e}"
+                return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
+            except LarkAuthError as e:
+                msg = f"❌ lark-cli 鉴权失败：{e}"
+                return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
+            except LarkDocNotFoundError as e:
+                msg = f"❌ 飞书文档读不到：{e}"
+                return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
+            except (LarkInvalidResponseError, LarkFetcherError) as e:
+                msg = f"❌ 飞书抓取失败：{e}"
+                return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
+
+            # LLM 重写
+            parser = FeishuParserAgent()
+            rewrite_result = parser.rewrite(lark_doc.cleaned_markdown)
+            final_title = title or lark_doc.title
+
+            if is_dry_run:
+                # 仅预览
+                preview = rewrite_result.rewritten_md[:800]
+                msg = (
+                    f"👀 DRY-RUN 成功：{final_title} | "
+                    f"raw={lark_doc.raw_length} → cleaned={lark_doc.cleaned_length} → "
+                    f"rewritten={len(rewrite_result.rewritten_md)} 字符 | "
+                    f"评审点={rewrite_result.points_count} | "
+                    f"fallback={rewrite_result.fallback_used}"
+                )
+                logger.info(f"[import-url] feishu dry_run ok: {msg}")
+                return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
+
+            # 真正入库
+            doc = knowledge_repo.add_text(
+                title=final_title,
+                text=rewrite_result.rewritten_md,
+                asset_type=AssetType(asset_type),
+                source=SourceType.FEISHU_AGENT,
+                url=url,
+                tags=tag_list or None,
+                level="建议",
+            )
+            warning = f" | ⚠️ {rewrite_result.error}" if rewrite_result.fallback_used else ""
+            msg = (
+                f"✅ 飞书入库成功：{doc.title}，{doc.chunk_count} chunks，"
+                f"评审点={rewrite_result.points_count}（来源：feishu_agent）{warning}"
+            )
+        else:
+            # 公开链接链路：url_fetcher HTTP GET
+            fetched = await fetch_url(url)
+            doc = knowledge_repo.add_url(
+                title=title or fetched.title,
+                url=url,
+                text=fetched.content,
+                content_type=fetched.content_type,
+                source_label=fetched.source,
+                asset_type=AssetType(asset_type),
+                tags=tag_list,
+            )
+            msg = f"✅ 导入成功：{doc.title}，{doc.chunk_count} chunks（来源：{fetched.source}）"
     except Exception as e:
-        msg = f"导入失败：{e}"
+        logger.exception(f"[import-url] 导入失败：{e}")
+        msg = f"❌ 导入失败：{e}"
+
     return RedirectResponse(f"/knowledge/admin/import-url?msg={msg}", status_code=302)
 
 

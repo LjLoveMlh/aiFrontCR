@@ -57,6 +57,25 @@ if [ "$SEED_KB" = "true" ]; then
     python -m app.scripts.seed_knowledge 2>&1 | tail -5
 fi
 
+# ---------- 3.5 配置 lark-cli（私域飞书 CR 文档解析 agent 需要） ----------
+# 容器内没有 macOS Keychain，需显式注入 appSecret
+if [ -n "$FEISHU_APP_ID" ] && [ -n "$FEISHU_APP_SECRET" ]; then
+    LARK_CONFIG_DIR="$HOME/.lark-cli"
+    mkdir -p "$LARK_CONFIG_DIR"
+    if [ ! -f "$LARK_CONFIG_DIR/config.json" ]; then
+        echo "🔐 初始化 lark-cli config (app_id=$FEISHU_APP_ID)..."
+        echo -n "$FEISHU_APP_SECRET" | lark-cli config init \
+            --app-id "$FEISHU_APP_ID" \
+            --app-secret-stdin \
+            --brand "${FEISHU_BRAND:-feishu}" 2>&1 | tail -3 || \
+            echo "  ⚠️ lark-cli config init 失败,私域飞书功能不可用"
+    else
+        echo "🔐 lark-cli config.json 已存在,跳过初始化"
+    fi
+else
+    echo "ℹ️  未配置 FEISHU_APP_ID/FEISHU_APP_SECRET,跳过 lark-cli（私域飞书功能不可用）"
+fi
+
 # ---------- 4. 启动 uvicorn ----------
 echo "🚀 启动 uvicorn (workers=$WORKERS)..."
 exec uvicorn app.main:app \

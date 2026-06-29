@@ -29,6 +29,7 @@ class SourceType(str, Enum):
     INGEST_CLI = "ingest_cli"      # CLI 批量入库
     AUTO_REVIEW = "auto_review"    # 阶段2 LangGraph 自动沉淀
     CLOUDCODE = "cloudcode"        # 阶段4 CloudCode 编辑器入库
+    FEISHU_AGENT = "feishu_agent"  # 飞书私域文档 agent 解析入库
 
 
 class Document(BaseModel):

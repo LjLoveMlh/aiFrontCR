@@ -5,7 +5,7 @@
 
 <form action="/knowledge/admin/import-url" method="post">
   <label>
-    <span>URL（飞书公开文档 / 公共 .md / 在线 HTML）</span>
+    <span>URL（飞书公开文档 / 公共 .md / 在线 HTML / <strong>私域飞书 CR</strong>）</span>
     <input type="url" name="url" placeholder="https://xxx.feishu.cn/docx/...  或  https://raw.githubusercontent.com/.../xxx.md" required />
   </label>
 
@@ -28,16 +28,27 @@
     <input type="text" name="tags" placeholder="ts,vue" />
   </label>
 
+  <label>
+    <input type="checkbox" name="is_feishu_agent" value="true" />
+    <span>🔐 这是<strong>私域飞书</strong>文档，使用 lark-cli + LLM 解析（自动推断示意代码）</span>
+  </label>
+
+  <label>
+    <input type="checkbox" name="dry_run" value="true" />
+    <span>👀 仅预览（dry_run）：只返回 LLM 重写结果，不真入库</span>
+  </label>
+
   <button type="submit">抓取并入库</button>
 </form>
 
 <article>
-  <h4>支持范围（v1）</h4>
+  <h4>支持范围</h4>
   <ul>
     <li>✅ 飞书公开文档（anyone with link can view）</li>
     <li>✅ 公共 MD 链接（raw.githubusercontent.com / *.md）</li>
     <li>✅ 普通 HTML 页面（自动清洗）</li>
-    <li>⏸ 飞书企业内部鉴权文档（v1.1 再补 OpenAPI）</li>
+    <li>✅ <strong>私域飞书 CR 文档</strong>（lark-cli bot 身份 + LLM 重写为标准 CR 格式）</li>
   </ul>
+  <p><small>💡 私域飞书依赖本机 lark-cli：需先 <code>npm i -g lark-cli</code> 并完成 <code>lark-cli auth login</code> 配好 bot scope（<code>docx:document:readonly</code>）。</small></p>
 </article>
 {% endblock %}

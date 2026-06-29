@@ -13,18 +13,6 @@
 - **服务**：FastAPI + Docker Compose
 - **参考教程**：[AI Agents From Zero](https://didilili.github.io/ai-agents-from-zero/#/)
 
-## 阶段路线
-
-| 阶段 | 内容 | 状态 |
-|------|------|------|
-| 0 | 项目初始化 & 环境搭建（千问接入模板） | ✅ |
-| 1 | 单知识库 RAG（Redis Vector + DashScope 嵌入 + Web 后台） | ✅ |
-| 2 | LangGraph 评审工作流（5 节点状态机） | ✅ |
-| 3 | Git diff 解析 + pre-commit 钩子 | ✅ |
-| 4 | FastAPI 服务 + SSE + API Key 鉴权 + 业务统计 | ✅ |
-| 5 | Docker Compose 容器化（多阶段构建 + 4 命名卷） | ✅ |
-| 6 | RAG 调优 + 端到端联调 + 使用手册 | ✅ |
-
 ## 快速开始
 
 完整手册见 **[USER_GUIDE.md](./USER_GUIDE.md)**，3 步起服务：
@@ -37,9 +25,18 @@ make health                                # 验证
 ```
 
 服务地址：
-- API：http://localhost:8000（Swagger: `/docs`）
-- 知识库后台：http://localhost:8000/knowledge/admin（默认密码 `admin123`）
-- RedisInsight：http://localhost:8001
+
+| 服务 | 地址 | 用途 |
+|---|---|---|
+| **API** | http://localhost:8000 | 主 API（评审 / SSE / 知识库） |
+| **Swagger UI** | http://localhost:8000/docs | 接口文档 + 在线调试 |
+| **知识库后台** | http://localhost:8000/knowledge/admin | 文档管理 / 检索调试 / 反馈（密码 `admin123`） |
+| **RedisInsight** | http://localhost:8001 | Redis Web UI |
+| **LLM 使用手册** | http://localhost:8000/llm-manual.md | 给其他 LLM 工具读的机器可读手册（Markdown） |
+| **LLM 手册（纯文本）** | http://localhost:8000/for-llm.txt | 兜底版（去掉 Markdown 标记） |
+
+> 🤖 **如果你是另一个 LLM 工具**（Cursor / CloudCode / Trae / Claude Code / Aider / Continue …）：
+> 只需 `GET http://localhost:8000/llm-manual.md`，里面写全了 aiFrontCR 的所有 API、入参、出参、鉴权、错误码和集成示例。
 
 ### 验证千问联通（不依赖 Docker）
 
@@ -52,7 +49,7 @@ python -m app.scripts.verify_qwen
 ### 跑单测
 
 ```bash
-make test               # 容器内：61 passed
+make test               # 容器内
 pytest tests/unit -v    # 宿主机
 ```
 
@@ -61,20 +58,21 @@ pytest tests/unit -v    # 宿主机
 ```
 aiFrontCR/
 ├── app/                    # 源码主包（教程用 app/ 替代 src/）
-│   ├── api/                # FastAPI 路由
+│   ├── api/                # FastAPI 路由（含 /llm-manual.md 给 LLM 看）
 │   ├── clients/            # 外部依赖单例（llm / embedding / redis）
 │   ├── conf/               # 配置加载（pydantic-settings）
 │   ├── core/               # 基础设施（日志 / git 操作）
-│   ├── agent/              # LangGraph 图 / 节点 / 状态（阶段2）
-│   ├── entities/           # Pydantic 业务实体（阶段2）
-│   ├── models/             # 数据模型（阶段2）
-│   ├── prompt/             # Prompt 加载工具（阶段2）
-│   ├── repositories/       # Redis / 文件存储（阶段1）
-│   ├── scripts/            # 一次性脚本（verify_qwen 等）
-│   ├── services/           # 业务串联层（阶段2）
+│   ├── agent/              # LangGraph 图 / 节点 / 状态
+│   ├── entities/           # Pydantic 业务实体
+│   ├── models/             # 数据模型
+│   ├── prompt/             # Prompt 加载工具
+│   ├── repositories/       # Redis / 文件存储
+│   ├── scripts/            # 一次性脚本（verify_qwen / precommit / ingest_file）
+│   ├── services/           # 业务串联层
+│   ├── web/                # 知识库管理后台（FastAPI + Jinja2）
 │   └── main.py             # FastAPI 入口
 ├── conf/                   # 静态 YAML（日志、路径）
-├── prompts/                # Prompt 模板（阶段2）
+├── prompts/                # Prompt 模板
 ├── logs/                   # 运行日志
 ├── data/                   # 本地数据
 └── tests/                  # 单测 / 集成测试
@@ -86,7 +84,5 @@ aiFrontCR/
 - **配置加载**：env 优先 + pydantic-settings（少量静态配置走 `conf/app_config.yaml`）
 - **客户端模式**：对齐教程 `*ClientManager` 单例 + `init()` 懒加载
 - **依赖管理**：纯 `pip + requirements.txt`（未引入 poetry/uv 以贴合教程）
+- **LLM 友好**：暴露 `/llm-manual.md` 让其他大模型工具无需阅读源码就能直接对接 API
 
-## 下一步
-
-完成阶段0 验收后，进入 **阶段1：双知识库 RAG 模块**——把 `CLAUDE.md` 团队规范与历史 CR 记录接入 Redis Vector。

@@ -80,6 +80,14 @@ class Settings(BaseSettings):
     # API Key 是否强制校验（False=开发模式可跳过；True=生产模式）
     api_key_required: bool = False
 
+    # ==================== 飞书 CR 文档解析 agent ====================
+    # lark-cli 可执行文件路径（默认走 PATH，可被 FEISHU_LARK_CLI_PATH 覆盖）
+    feishu_lark_cli_path: str = "lark-cli"
+    # 抓取超时（秒）
+    feishu_fetch_timeout: float = 30.0
+    # 喂给 LLM 的最大字符数（超长截断,防超长爆 token）
+    feishu_llm_max_input_chars: int = 8000
+
     # ==================== 派生属性 ====================
     @property
     def log_dir_abs(self) -> Path:

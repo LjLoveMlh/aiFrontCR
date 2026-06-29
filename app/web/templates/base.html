@@ -1,45 +1,57 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{% block title %}{{ app_name }} · 知识库后台{% endblock %}</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
-  <link rel="stylesheet" href="/knowledge/static/css/app.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E" />
-</head>
-<body>
-  <header class="container-fluid site-header">
-    <nav>
-      <ul>
-        <li><strong>📚 {{ app_name }} · 知识库后台</strong></li>
-      </ul>
-      <ul>
-        <li><a href="/knowledge/admin">概览</a></li>
-        <li><a href="/knowledge/admin/documents">文档</a></li>
-        <li><a href="/knowledge/admin/upload">上传</a></li>
-        <li><a href="/knowledge/admin/import-url">链接导入</a></li>
-        <li><a href="/knowledge/admin/search">检索</a></li>
-        <li><a href="/knowledge/admin/feedback">反馈</a></li>
-        {% if is_admin %}
-        <li>
-          <form action="/knowledge/logout" method="post" style="display:inline">
-            <button type="submit" class="secondary outline btn-sm">登出</button>
-          </form>
-        </li>
-        {% endif %}
-      </ul>
-    </nav>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{{ app_name }} · 知识库后台{% endblock %}</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
+    <link rel="stylesheet" href="/knowledge/static/css/app.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📚%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <header class="container-fluid site-header">
+      <nav>
+        <ul>
+          <li>
+            <strong style="color: white">📚 {{ app_name }} · 知识库后台</strong>
+          </li>
+        </ul>
+        <ul>
+          <li><a href="/knowledge/admin">概览</a></li>
+          <li><a href="/knowledge/admin/documents">文档</a></li>
+          <li><a href="/knowledge/admin/upload">上传</a></li>
+          <li><a href="/knowledge/admin/import-url">链接导入</a></li>
+          <li><a href="/knowledge/admin/search">检索</a></li>
+          <li><a href="/knowledge/admin/feedback">反馈</a></li>
+          {% if is_admin %}
+          <li>
+            <form
+              action="/knowledge/logout"
+              method="post"
+              style="display: inline"
+            >
+              <button type="submit" class="secondary outline btn-sm">
+                登出
+              </button>
+            </form>
+          </li>
+          {% endif %}
+        </ul>
+      </nav>
+    </header>
 
-  <main class="container">
-    {% block content %}{% endblock %}
-  </main>
+    <main class="container">{% block content %}{% endblock %}</main>
 
-  <footer class="container">
-    <small>aiFrontCR · 阶段1 · 简易密码鉴权 · 知识库管理后台</small>
-  </footer>
-  <script src="/knowledge/static/js/app.js"></script>
-  {% block extra_js %}{% endblock %}
-</body>
+    <footer class="container">
+      <small>aiFrontCR · 阶段1 · 简易密码鉴权 · 知识库管理后台</small>
+    </footer>
+    <script src="/knowledge/static/js/app.js"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
 </html>

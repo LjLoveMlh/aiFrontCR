@@ -41,11 +41,18 @@ RUN pip install --user --no-cache-dir -r requirements.txt
 # ---------- 阶段 2：runtime ----------
 FROM python:3.10-slim AS runtime
 
-# 仅装运行时系统依赖
+# 仅装运行时系统依赖（+ Node.js 给 lark-cli 用，飞书私域文档解析）
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     tini \
     git \
+    ca-certificates \
+    gnupg \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && npm install -g @larksuite/cli \
+    && npm cache clean --force \
+    && apt-get purge -y --auto-remove gnupg \
     && rm -rf /var/lib/apt/lists/*
 
 # 用非 root 用户跑（安全）
@@ -56,7 +63,7 @@ WORKDIR /app
 
 # 复制 builder 装好的包
 COPY --from=builder /root/.local /home/aifrontcr/.local
-ENV PATH=/home/aifrontcr/.local/bin:$PATH \
+ENV PATH=/home/aifrontcr/.local/bin:/usr/local/bin:$PATH \
     PYTHONPATH=/app:/home/aifrontcr/.local/lib/python3.10/site-packages \
     HF_HOME=/app/.cache/huggingface
 
