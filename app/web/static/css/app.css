@@ -1,0 +1,98 @@
+/* aiFrontCR 知识库后台 - 定制样式 */
+
+:root {
+  --pico-form-element-spacing-vertical: 0.5rem;
+  --pico-form-element-spacing-horizontal: 0.75rem;
+}
+
+/* 登录页 */
+.login-body {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+.login-container { max-width: 480px; width: 100%; }
+.login-card { padding: 2rem 1.5rem; }
+.login-error {
+  background: #fee;
+  color: #c00;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+/* 导航 */
+.site-header {
+  background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+.site-header nav { align-items: center; }
+.site-header a { color: white; text-decoration: none; }
+.site-header a:hover { text-decoration: underline; }
+.site-header button { color: white; border-color: white; }
+.site-header ul { align-items: center; }
+
+/* 统计卡片 */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 2rem 0;
+}
+.stat-card { padding: 1rem; text-align: center; }
+.stat-num { font-size: 2.5rem; font-weight: bold; color: #3b82f6; margin: 0.25rem 0; }
+.stat-num-sm { font-size: 0.9rem; margin: 0.25rem 0; word-break: break-all; }
+
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.action-grid a { text-align: center; }
+
+/* 标签 */
+.tag {
+  display: inline-block;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  background: #e5e7eb;
+  color: #374151;
+  margin-right: 0.25rem;
+}
+.tag-spec { background: #dbeafe; color: #1e40af; }
+.tag-review_case { background: #fef3c7; color: #92400e; }
+.tag-feedback { background: #d1fae5; color: #065f46; }
+.tag-unknown { background: #f3f4f6; color: #6b7280; }
+.tag-lang { background: #ede9fe; color: #5b21b6; }
+.tag-level { background: #fee2e2; color: #991b1b; }
+.tag-score { background: #fce7f3; color: #9d174d; font-weight: bold; }
+
+.doc-id { font-family: monospace; font-size: 0.85em; color: #6b7280; }
+
+/* chunk 卡片 */
+.chunk-card {
+  margin-bottom: 1rem;
+  border-left: 3px solid #3b82f6;
+}
+.chunk-card pre {
+  background: #1f2937;
+  color: #f9fafb;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
+
+/* 表格 */
+table th, table td { padding: 0.5rem 0.75rem; font-size: 0.9rem; }

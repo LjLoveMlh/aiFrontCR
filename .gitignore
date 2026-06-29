@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+.env
+.eggs/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# 环境变量与本地配置
+.env
+.env.local
+.env.*.local
+
+# 测试与覆盖率
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.tox/
+.cache
+
+# 运行时产物
+logs/*
+!logs/.gitkeep
+data/*
+!data/.gitkeep
+.cache/
+.idea/
+.vscode/
+.DS_Store
+
+# HuggingFace 模型缓存（阶段1+）
+hf_cache/
+huggingface/

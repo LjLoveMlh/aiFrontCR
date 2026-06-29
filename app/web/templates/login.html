@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>登录 · {{ app_name }}</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="stylesheet" href="/knowledge/static/css/app.css" />
+</head>
+<body class="login-body">
+  <main class="container login-container">
+    <article class="login-card">
+      <header>
+        <hgroup>
+          <h1>📚 {{ app_name }}</h1>
+          <p>前端代码评审 Agent · 知识库后台</p>
+        </hgroup>
+      </header>
+      {% if error %}
+      <div role="alert" class="login-error">{{ error }}</div>
+      {% endif %}
+      <form action="/knowledge/login" method="post">
+        <label>
+          <span>管理员密码</span>
+          <input type="password" name="password" placeholder="请输入 ADMIN_PASSWORD" required autofocus />
+        </label>
+        <button type="submit" class="contrast">登录</button>
+      </form>
+      <footer>
+        <small>阶段1 · 简易密码鉴权；密码在 <code>.env</code> 的 <code>ADMIN_PASSWORD</code> 配置</small>
+      </footer>
+    </article>
+  </main>
+</body>
+</html>

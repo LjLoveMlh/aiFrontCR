@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>检索调试</h1>
+
+<form action="/knowledge/admin/search" method="get">
+  <label>
+    <span>Query（代码片段 / 关键词 / 评审疑问）</span>
+    <input type="text" name="q" value="{{ q }}" placeholder="let foo: any = ..." required autofocus />
+  </label>
+  <button type="submit">检索</button>
+</form>
+
+{% if results is defined and results %}
+  {% if results.error %}
+  <article><mark>检索失败：{{ results.error }}</mark></article>
+  {% elif results.results %}
+  <h2>命中 {{ results.total }} 个（耗时 {{ "%.0f"|format(results.elapsed_ms) }} ms）</h2>
+  <p>
+    <small>
+      向量召回 {{ results.recall_stats.vector_hits }} ·
+      关键词召回 {{ results.recall_stats.keyword_hits }} ·
+      合并去重 {{ results.recall_stats.merged_before_rerank }} ·
+      BGE 重排后 top {{ results.recall_stats.final }}
+    </small>
+  </p>
+  {% for r in results.results %}
+  <article class="chunk-card">
+    <header>
+      <small>
+        <code>{{ r.chunk.chunk_id[:16] }}</code>
+        · <span class="tag tag-{{ r.chunk.asset_type.value }}">{{ r.chunk.asset_type.value }}</span>
+        {% for t in r.chunk.tags %}<span class="tag tag-lang">{{ t }}</span>{% endfor %}
+        {% if r.chunk.level %}<span class="tag tag-level">{{ r.chunk.level }}</span>{% endif %}
+        {% if r.vector_score %}<span class="tag">vec:{{ "%.3f"|format(r.vector_score) }}</span>{% endif %}
+        {% if r.keyword_score %}<span class="tag">kw:{{ "%.3f"|format(r.keyword_score) }}</span>{% endif %}
+        {% if r.rerank_score %}<span class="tag tag-score">rerank:{{ "%.3f"|format(r.rerank_score) }}</span>{% endif %}
+        · 路径：{{ r.recall_path|join(' → ') }}
+      </small>
+    </header>
+    <pre><code>{{ r.text }}</code></pre>
+    <footer>
+      <small>
+        {% if r.chunk.title %}<strong>{{ r.chunk.title }}</strong>{% endif %}
+        {% if r.chunk.url %}· <a href="{{ r.chunk.url }}" target="_blank">原文</a>{% endif %}
+      </small>
+    </footer>
+  </article>
+  {% endfor %}
+  {% else %}
+  <p>无命中。尝试更换 query 或先 <a href="/knowledge/admin/upload">入库</a> 一些文档。</p>
+  {% endif %}
+{% endif %}
+{% endblock %}

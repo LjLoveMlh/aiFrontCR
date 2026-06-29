@@ -1,0 +1,53 @@
+# =============================================================================
+# aiFrontCR 静态运维配置（非密钥项；密钥走 .env）
+# 教程 ai-agents-from-zero 用 OmegaConf 加载；本项目改 pydantic-settings 读 env
+# 此文件保留不易变 / 部署相关的兜底默认值
+# =============================================================================
+
+logging:
+  # loguru 彩色日志格式
+  format: "<g>{time:YYYY-MM-DD HH:mm:ss}</g> | <lvl>{level: <7}</lvl> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - {message}"
+  # 文件滚动策略
+  rotation: "20 MB"
+  retention: "30 days"
+  # 是否同时输出到文件
+  file_output: true
+
+paths:
+  prompts_dir: ./prompts
+  data_dir: ./data
+  logs_dir: ./logs
+  knowledge_base_dir: ./data/knowledge_base
+  uploads_dir: ./data/uploads
+  bootstrap_dir: ./data/bootstrap
+
+# 阶段启用开关
+features:
+  enable_rag_retrieval: true       # 阶段1 已启用
+  enable_langgraph_workflow: false  # 阶段2
+  enable_git_precommit: false       # 阶段3
+  enable_http_api: true             # /health + /knowledge/* 已启用
+  enable_docker: false              # 阶段5
+  enable_web_admin: true            # 阶段1 Web 后台已启用
+
+# Web 后台
+web:
+  admin_prefix: /knowledge         # 所有后台路由前缀
+  api_prefix: /knowledge/api       # JSON API 前缀
+  # 支持的文件类型（白名单）
+  allowed_extensions: [".md", ".markdown", ".txt", ".json"]
+  # 最大上传大小（字节）；默认 10MB
+  max_upload_size: 10485760
+  # Pico.css CDN（v1 阶段，v2 改本地化）
+  pico_css_cdn: "https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+
+# 知识库
+knowledge:
+  # asset_type 枚举
+  asset_types:
+    - spec                # 编码规范
+    - review_case         # 历史评审记录
+    - feedback            # 评审反馈沉淀
+    - unknown
+  # 自动从哪些目录启动时加载（生产可关）
+  auto_load_bootstrap: true

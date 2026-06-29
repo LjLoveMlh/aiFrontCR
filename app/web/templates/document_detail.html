@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{{ doc.title }}</h1>
+<p>
+  <a href="/knowledge/admin/documents" role="button" class="secondary outline btn-sm">← 返回列表</a>
+</p>
+
+<article>
+  <table>
+    <tbody>
+      <tr><th>ID</th><td><code>{{ doc.id }}</code></td></tr>
+      <tr><th>类型</th><td><span class="tag tag-{{ doc.asset_type }}">{{ doc.asset_type }}</span></td></tr>
+      <tr><th>来源</th><td>{{ doc.source }}</td></tr>
+      <tr><th>URL</th><td>{% if doc.url %}<a href="{{ doc.url }}" target="_blank">{{ doc.url }}</a>{% else %}-{% endif %}</td></tr>
+      <tr><th>Tags</th><td>{% for t in doc.tags %}<span class="tag tag-lang">{{ t }}</span>{% endfor %}</td></tr>
+      <tr><th>Level</th><td>{% if doc.level %}<span class="tag tag-level">{{ doc.level }}</span>{% else %}-{% endif %}</td></tr>
+      <tr><th>Chunks</th><td>{{ doc.chunk_count }}</td></tr>
+    </tbody>
+  </table>
+</article>
+
+<h2>Chunks（{{ doc.chunks|length }}）</h2>
+{% for c in doc.chunks %}
+<article class="chunk-card">
+  <header>
+    <small>
+      <code>#{{ c.metadata.chunk_index }}</code>
+      · <span class="tag tag-{{ c.metadata.asset_type }}">{{ c.metadata.asset_type }}</span>
+      {% if c.metadata.level %}<span class="tag tag-level">{{ c.metadata.level }}</span>{% endif %}
+    </small>
+  </header>
+  <pre><code>{{ c.text }}</code></pre>
+</article>
+{% endfor %}
+{% endblock %}

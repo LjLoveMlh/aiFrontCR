@@ -1,0 +1,58 @@
+# =============================================================================
+# aiFrontCR · 前端代码评审 Agent 依赖清单
+# 版本对齐教程 ai-agents-from-zero/requirements.txt
+# Python 3.10–3.13（推荐 3.10；3.14 因 langchain-redis 暂不兼容请避免）
+# =============================================================================
+
+# ---------- 核心框架（对齐教程版本区间） -----------------------------------
+langchain>=1.2,<2
+langchain-core>=1.2,<2
+langchain-openai>=1.1,<2        # 兼容模式（DASHSCOPE_BASE_URL 走 OpenAI 协议）备用
+openai>=1.0,<3
+
+# ---------- 社区与厂商集成（ChatTongyi 在 langchain_community.chat_models.tongyi） ----
+langchain-community>=0.3,<1
+dashscope>=1.0                  # 通义千问官方 SDK（教程 02-models_io 章节使用）
+
+# ---------- LangGraph（阶段2 工作流编排） ----------------------------------
+langgraph>=1.0,<2
+langgraph-checkpoint-sqlite>=2.0,<4   # SQLite 检查点（可选；阶段2 用得到时再装）
+
+# ---------- 向量库 Redis（教程 10-rag / 18 章使用 langchain-redis） ---------
+redis>=5.3,<6
+langchain-redis>=0.2
+
+# ---------- Embedding & Reranker（阶段1 引入，本地 BGE） -------------------
+sentence-transformers>=3.0       # BGE-M3 / BGE-Reranker 底层
+langchain-huggingface>=0.1      # HuggingFaceEmbeddings 集成
+FlagEmbedding>=1.2              # BGE-Reranker-v2-m3 FlagReranker（>=8192 token）
+hf-xet<1.2.1                    # 锁定，兼容 langchain-redis 0.2.5
+
+# ---------- 配置 & 工具 ----------------------------------------------------
+pydantic>=2.7,<3
+pydantic-settings>=2.6          # .env 加载
+python-dotenv>=1.0
+loguru>=0.7
+
+# ---------- API 层（阶段4 主力，阶段0 仅留 /health） -----------------------
+fastapi>=0.115
+uvicorn[standard]>=0.32
+httpx>=0.27
+
+# ---------- Web 后台（阶段1） ---------------------------------------------
+jinja2>=3.1                     # FastAPI 已传递依赖
+itsdangerous>=2.2               # SessionMiddleware 签名
+python-multipart>=0.0.9         # 文件上传
+beautifulsoup4>=4.12            # 飞书 / HTML 清洗
+lxml>=5.0                       # BS4 解析器
+bleach>=6.1                     # 文本清洗（去 script/style）
+
+# ---------- Git 集成（阶段3 主力，阶段0 占位） -----------------------------
+gitpython>=3.1.43
+
+# ---------- 工具库 ---------------------------------------------------------
+tenacity>=9.0                   # 重试
+
+# ---------- 测试（dev 依赖；生产可拆 requirements-dev.txt） ----------------
+pytest>=8.0
+pytest-asyncio>=0.23

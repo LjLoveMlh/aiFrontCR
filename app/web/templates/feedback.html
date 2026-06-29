@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>评审正向反馈</h1>
+{% if msg %}<div role="alert">{{ msg }}</div>{% endif %}
+
+<p><small>完成一次人工代码评审后，把评审结论沉淀到知识库，未来自动评审时可参考历史案例。</small></p>
+
+<form action="/knowledge/admin/feedback" method="post">
+  <label>
+    <span>标题</span>
+    <input type="text" name="title" placeholder="用户头像组件 prop 缺少 onError" required />
+  </label>
+
+  <label>
+    <span>涉及文件（可选）</span>
+    <input type="text" name="file_path" placeholder="src/components/UserAvatar/index.tsx" />
+  </label>
+
+  <label>
+    <span>行号区间（可选）</span>
+    <input type="text" name="line_range" placeholder="L10-L18" />
+  </label>
+
+  <label>
+    <span>关联规则 ID（可选）</span>
+    <input type="text" name="rule_id" placeholder="RULE-001" />
+  </label>
+
+  <label>
+    <span>严重程度</span>
+    <select name="severity">
+      <option value="blocker">blocker（阻断）</option>
+      <option value="warning" selected>warning（警告）</option>
+      <option value="suggestion">suggestion（建议）</option>
+    </select>
+  </label>
+
+  <label>
+    <span>Tags（逗号分隔）</span>
+    <input type="text" name="tags" placeholder="ts,react" />
+  </label>
+
+  <label>
+    <span>Level（必须 / 禁止 / 建议）</span>
+    <input type="text" name="level" placeholder="必须" />
+  </label>
+
+  <label>
+    <span>错误代码</span>
+    <textarea name="code_bad" rows="6" required></textarea>
+  </label>
+
+  <label>
+    <span>正确代码（可选）</span>
+    <textarea name="code_good" rows="6"></textarea>
+  </label>
+
+  <label>
+    <span>评审意见 / 整改建议</span>
+    <textarea name="review_opinion" rows="4" required></textarea>
+  </label>
+
+  <button type="submit">沉淀为新案例</button>
+</form>
+{% endblock %}

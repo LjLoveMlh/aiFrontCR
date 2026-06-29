@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>本地文件上传</h1>
+{% if msg %}<div role="alert">{{ msg }}</div>{% endif %}
+
+<form action="/knowledge/admin/upload" method="post" enctype="multipart/form-data">
+  <label>
+    <span>选择文件（.md / .markdown / .txt / .json）</span>
+    <input type="file" name="file" accept=".md,.markdown,.txt,.json" required />
+  </label>
+
+  <label>
+    <span>资产类型</span>
+    <select name="asset_type" required>
+      {% for at in asset_types %}
+      <option value="{{ at }}" {% if at == 'spec' %}selected{% endif %}>{{ at }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    <span>Tags（逗号分隔，如 ts,vue,react）</span>
+    <input type="text" name="tags" placeholder="ts,vue" />
+  </label>
+
+  <label>
+    <span>Level（仅 spec 有效：必须 / 禁止 / 建议）</span>
+    <input type="text" name="level" placeholder="必须" />
+  </label>
+
+  <button type="submit">上传并入库</button>
+</form>
+
+<p><small>提示：上传后文件会保存到 <code>data/uploads/</code>，并自动切片 + Embedding 写入 Redis 向量库。</small></p>
+{% endblock %}

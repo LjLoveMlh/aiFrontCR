@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>概览</h1>
+
+<div class="stats-grid">
+  <article class="stat-card">
+    <h3>文档数</h3>
+    <p class="stat-num">{{ stats.document_count }}</p>
+  </article>
+  <article class="stat-card">
+    <h3>Chunks</h3>
+    <p class="stat-num">{{ stats.chunk_count }}</p>
+  </article>
+  <article class="stat-card">
+    <h3>索引</h3>
+    <p class="stat-num-sm"><code>{{ stats.index_name }}</code></p>
+  </article>
+  <article class="stat-card">
+    <h3>Redis</h3>
+    <p class="stat-num-sm"><code>{{ stats.redis_url }}</code></p>
+  </article>
+</div>
+
+<h2>按资产类型分布</h2>
+<table>
+  <thead><tr><th>类型</th><th>文档数</th></tr></thead>
+  <tbody>
+    {% for at, cnt in stats.by_type.items() %}
+    <tr><td><code>{{ at }}</code></td><td>{{ cnt }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>快捷操作</h2>
+<div class="action-grid">
+  <a href="/knowledge/admin/upload" role="button">📤 上传本地文件</a>
+  <a href="/knowledge/admin/import-url" role="button" class="secondary">🔗 导入在线链接</a>
+  <a href="/knowledge/admin/search" role="button" class="contrast">🔍 检索调试</a>
+  <a href="/knowledge/admin/feedback" role="button" class="secondary outline">💬 反馈沉淀</a>
+</div>
+{% endblock %}

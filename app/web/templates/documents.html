@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>知识库文档</h1>
+{% if msg %}<div role="alert">{{ msg }}</div>{% endif %}
+
+{% if documents %}
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>标题</th>
+      <th>类型</th>
+      <th>来源</th>
+      <th>Tags</th>
+      <th>Level</th>
+      <th>Chunks</th>
+      <th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for d in documents %}
+    <tr>
+      <td><code class="doc-id">{{ d.id[:8] }}</code></td>
+      <td><a href="/knowledge/admin/documents/{{ d.id }}">{{ d.title }}</a></td>
+      <td><span class="tag tag-{{ d.asset_type }}">{{ d.asset_type }}</span></td>
+      <td><small>{{ d.source }}</small></td>
+      <td>
+        {% for t in d.tags %}<span class="tag tag-lang">{{ t }}</span>{% endfor %}
+      </td>
+      <td>{% if d.level %}<span class="tag tag-level">{{ d.level }}</span>{% endif %}</td>
+      <td>{{ d.chunk_count }}</td>
+      <td>
+        <button class="secondary outline btn-sm"
+                onclick="deleteDoc('{{ d.id }}', '{{ d.title }}')">删除</button>
+        <button class="contrast outline btn-sm"
+                onclick="reembedDoc('{{ d.id }}', '{{ d.title }}')">重向量化</button>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>暂无文档。请先在 <a href="/knowledge/admin/upload">上传页</a> 添加，或运行 <code>python -m app.scripts.seed_knowledge</code> 灌入样例。</p>
+{% endif %}
+
+<script>
+async function deleteDoc(id, title) {
+  if (!confirm(`确认删除文档「${title}」？此操作将同时删除 Redis 内的所有 chunks。`)) return;
+  const r = await fetch(`/knowledge/api/documents/${id}`, { method: 'DELETE' });
+  const data = await r.json();
+  if (r.ok) { alert(`已删除 ${data.chunks_deleted} 个 chunks`); location.reload(); }
+  else alert('删除失败：' + (data.detail || JSON.stringify(data)));
+}
+async function reembedDoc(id, title) {
+  if (!confirm(`确认重向量化文档「${title}」？将先删除后重建所有 chunks。`)) return;
+  const r = await fetch(`/knowledge/api/documents/${id}/reembed`, { method: 'POST' });
+  const data = await r.json();
+  if (r.ok) { alert(`已重向量化 ${data.chunks} 个 chunks`); location.reload(); }
+  else alert('重向量化失败：' + (data.detail || JSON.stringify(data)));
+}
+</script>
+{% endblock %}

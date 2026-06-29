@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>在线链接导入</h1>
+{% if msg %}<div role="alert">{{ msg }}</div>{% endif %}
+
+<form action="/knowledge/admin/import-url" method="post">
+  <label>
+    <span>URL（飞书公开文档 / 公共 .md / 在线 HTML）</span>
+    <input type="url" name="url" placeholder="https://xxx.feishu.cn/docx/...  或  https://raw.githubusercontent.com/.../xxx.md" required />
+  </label>
+
+  <label>
+    <span>标题（留空则自动从页面提取）</span>
+    <input type="text" name="title" placeholder="（自动）" />
+  </label>
+
+  <label>
+    <span>资产类型</span>
+    <select name="asset_type" required>
+      {% for at in asset_types %}
+      <option value="{{ at }}" {% if at == 'spec' %}selected{% endif %}>{{ at }}</option>
+      {% endfor %}
+    </select>
+  </label>
+
+  <label>
+    <span>Tags（逗号分隔）</span>
+    <input type="text" name="tags" placeholder="ts,vue" />
+  </label>
+
+  <button type="submit">抓取并入库</button>
+</form>
+
+<article>
+  <h4>支持范围（v1）</h4>
+  <ul>
+    <li>✅ 飞书公开文档（anyone with link can view）</li>
+    <li>✅ 公共 MD 链接（raw.githubusercontent.com / *.md）</li>
+    <li>✅ 普通 HTML 页面（自动清洗）</li>
+    <li>⏸ 飞书企业内部鉴权文档（v1.1 再补 OpenAPI）</li>
+  </ul>
+</article>
+{% endblock %}

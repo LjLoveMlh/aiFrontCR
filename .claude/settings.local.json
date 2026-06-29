@@ -1,0 +1,9 @@
+{
+  "security.confirmExternalCommand": false,
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(//tmp/**)"
+    ]
+  }
+}

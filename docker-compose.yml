@@ -1,0 +1,114 @@
+# =============================================================================
+# aiFrontCR · Docker Compose 编排
+#
+# 启动：docker compose up -d
+# 停止：docker compose down
+# 重启：docker compose restart
+# 日志：docker compose logs -f api
+# 重置数据：docker compose down -v
+# =============================================================================
+
+name: aifrontcr
+
+services:
+  # ==================== Redis 向量库 ====================
+  redis:
+    image: redis/redis-stack:latest
+    container_name: aifrontcr-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"          # Redis 协议（应用连这个）
+      - "8001:8001"          # RedisInsight（Web UI，可选）
+    environment:
+      # 持久化策略
+      - REDIS_ARGS=--save 60 1000 --appendonly yes
+    volumes:
+      - redis_data:/data     # 持久化数据卷（容器重启不丢）
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - aifrontcr-net
+
+  # ==================== AI 服务（Python） ====================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: aifrontcr/api:latest
+    container_name: aifrontcr-api
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy  # 等 Redis 健康后再启动
+    ports:
+      - "8000:8000"          # FastAPI 端口
+    environment:
+      # ===== 阿里通义千问（必填，启动前修改 .env 或在环境里覆盖）=====
+      - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY:-}
+      - QWEN_CHAT_MODEL=${QWEN_CHAT_MODEL:-qwen3.7-max}
+      - QWEN_TEMPERATURE=${QWEN_TEMPERATURE:-0.1}
+      - QWEN_MAX_TOKENS=${QWEN_MAX_TOKENS:-4096}
+
+      # ===== 知识库 RAG =====
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_INDEX_NAME=${REDIS_INDEX_NAME:-aiFrontCR_kb}
+      - EMBEDDING_BACKEND=${EMBEDDING_BACKEND:-dashscope}
+      - EMBEDDING_MODEL_ID=${EMBEDDING_MODEL_ID:-text-embedding-v3}
+      - EMBEDDING_DIM=${EMBEDDING_DIM:-1024}
+      - RERANK_BACKEND=${RERANK_BACKEND:-dashscope}
+      - RERANK_MODEL_ID=${RERANK_MODEL_ID:-gte-rerank}
+
+      # ===== Web 后台 =====
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+      - SESSION_SECRET=${SESSION_SECRET:-change-me-use-openssl-rand-hex-32}
+
+      # ===== 阶段4 API Key 鉴权 =====
+      - API_KEYS=${API_KEYS:-}
+      - API_KEY_REQUIRED=${API_KEY_REQUIRED:-false}
+
+      # ===== 应用配置 =====
+      - APP_NAME=aiFrontCR
+      - APP_PORT=8000
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_DIR=/app/logs
+
+      # ===== 启动行为 =====
+      - INIT_INDEX=true       # 每次启动都尝试建索引（已存在则跳过）
+      - SEED_KB=${SEED_KB:-false}  # 是否灌入 bootstrap 样例（首次 true）
+      - WORKERS=${WORKERS:-2}
+    env_file:
+      - .env                  # 自动读 .env 覆盖
+    volumes:
+      # 持久化：日志 + uploads（用户上传文件）+ HuggingFace 缓存
+      # 注意：只挂 /app/data/uploads，避免覆盖镜像里内置的 /app/data/bootstrap
+      - api_logs:/app/logs
+      - api_data:/app/data/uploads
+      - api_cache:/app/.cache
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - aifrontcr-net
+
+# ==================== 网络 ====================
+networks:
+  aifrontcr-net:
+    driver: bridge
+
+# ==================== 数据卷 ====================
+volumes:
+  redis_data:
+    driver: local
+  api_logs:
+    driver: local
+  api_data:
+    driver: local
+  api_cache:
+    driver: local
